@@ -68,7 +68,7 @@ class Game:
     # Return updated squares and keys
     def keypress(self, key: str):
         keys = []
-        if key == "ENTER":
+        if key == "GO":
             word = self.current
             squares = self._enter()
             keys = word if squares else []

@@ -5,7 +5,7 @@ description = "A simple wordle clone with fasthtml"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "python-fasthtml>=0.4.5",
+    "python-fasthtml>=0.4.6",
 ]
 
 # [tool.uv.sources]

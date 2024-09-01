@@ -2,3 +2,5 @@
 app.css
 .sesskey
 __pycache__
+.vscode/
+tailwind.config.js

@@ -564,7 +564,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "python-fasthtml", specifier = ">=0.4.5" }]
+requires-dist = [{ name = "python-fasthtml", specifier = ">=0.4.6" }]
 
 [package.metadata.requires-dev]
 dev = [{ name = "ruff", specifier = ">=0.6.3" }]

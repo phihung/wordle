@@ -11,6 +11,7 @@ app, rt = fast_app(hdrs=[
 )
 
 # Add public/app.css to your .gitignore
+# serve(reload_excludes=["public/app.css"])
 ```
 
 Acknowledgement: This code is heavily inspired by the [pytailwindcss](https://github.com/timonweb/pytailwindcss) project.
@@ -54,7 +55,13 @@ class Tailwind:
     `public/app.css` should be in .gitignore
     """
 
-    def __init__(self, static_path = None, filename="app.css", cfg: str = DEFAULT_CONFIG, css: str = DEFAULT_SOURCE_CSS):
+    def __init__(
+        self,
+        static_path=None,
+        filename="app.css",
+        cfg: str = DEFAULT_CONFIG,
+        css: str = DEFAULT_SOURCE_CSS,
+    ):
         self.dir = tempfile.TemporaryDirectory()
         path = Path(self.dir.name)
         if static_path is None:
@@ -81,7 +88,7 @@ class Tailwind:
         )
         subprocess.run([str(cli)] + args, **kwargs)
         return self
-    
+
     def get_link_tag(self):
         from fasthtml.common import Link
 

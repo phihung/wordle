@@ -15,6 +15,6 @@ COPY --chown=user src ./src
 RUN touch README.md
 
 RUN uv sync --frozen
-RUN . .venv/bin/activate
 
-CMD ["uv", "run", "python", "src/wordle/ui.py"]
+# CMD ["uv", "run", "python", "src/wordle/ui.py"]
+CMD ["uv", "run", "uvicorn", "--port", "5001", "--host", "0.0.0.0", "wordle.ui:app"]

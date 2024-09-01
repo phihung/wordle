@@ -1,4 +1,4 @@
-from fasthtml.common import fast_app, Div, serve, Button, cookie, H1
+from fasthtml.common import fast_app, Div, serve, Button, H1
 from wordle.tw import Tailwind
 from wordle.game import Eval, Game, State
 
@@ -6,18 +6,22 @@ from wordle.game import Eval, Game, State
 app, rt = fast_app(hdrs=[Tailwind("./").run().get_link_tag()], pico=False, static_path="./")
 
 
-@rt("/")
-def get(data: str = None):
-    return make_app(Game.from_str(data))
+@app.get("/")
+def homepage(session):
+    if data := session.get("game"):
+        return make_app(Game.from_str(data))
+    return new_game.__wrapped__(session)
 
 
-@rt("/new")
-def post():
-    return make_app(Game.from_str(None))
+@app.post("/new")
+def new_game(session):
+    g = Game.from_str(None)
+    session["game"] = g.to_str()
+    return make_app(g)
 
 
-def make_app(g: "Game"):
-    return cookie("data", g.to_str()), Div(
+def make_app(g: Game):
+    return Div(
         Div(
             H1(Button("WORDLE", hx_post="/new"), cls="text-3xl font-bold"),
             cls="w-full flex flex-row place-content-center text-black",
@@ -41,18 +45,25 @@ def make_app(g: "Game"):
 
 
 @rt("/keypress")
-def put(key: str, data: str = None):
-    g = Game.from_str(data)
+def put(session, key: str):
+    if "game" not in session:
+        return Div(
+            "The app does not work inside iframe. Try it here https://phihung-wordle.hf.space/",
+            cls="h-screen flex items-center justify-center text-xl",
+            hx_swap_oob="true",
+            id="app",
+        )
+    g = Game.from_str(session["game"])
     squares, keys = g.keypress(key)
+    session["game"] = g.to_str()
     return (
-        cookie("data", g.to_str()),
         *[make_square(g, i) for i in squares],
         *[make_key(g, k) for k in keys],
         make_status(g),
     )
 
 
-def make_status(g: "Game"):
+def make_status(g: Game):
     msgs = {State.WIN: "You win", State.LOSE: "You lose"}
     return Div(
         msgs.get(g.state),
@@ -62,7 +73,7 @@ def make_status(g: "Game"):
     )
 
 
-def make_square(g: "Game", i):
+def make_square(g: Game, i):
     cls = "grid h-12 w-12 sm:h-14 sm:w-14 place-items-center rounded-sm text-2xl font-bold"
     c, state = g.get_square_state(i)
     styles = {
@@ -75,10 +86,10 @@ def make_square(g: "Game", i):
     return Div(c, cls=cls + " " + styles[state], id=f"sq{i}", hx_swap_oob="true")
 
 
-def make_key(g: "Game", key: str):
+def make_key(g: Game, key: str):
     state = g.get_keyboard_state(key)
-    cls = "grid h-14 cursor-pointer items-center rounded font-semibold"
-    size = " p-2 sm:p-4 " if key == "ENTER" else " w-7 sm:w-10 "
+    cls = "grid h-14 cursor-pointer items-center rounded font-semibold touch-manipulation"
+    size = " w-14 sm:w-16 " if len(key) > 1 else " w-9 sm:w-10 "
     styles = {
         Eval.CORRECT: GREEN,
         Eval.EXIST: YELLOW,
@@ -93,6 +104,7 @@ def make_key(g: "Game", key: str):
 
 
 GREEN, YELLOW, GRAY = "bg-[#20AA57]", "bg-[#E5B22D]", "bg-[#989898]"
-KEYBOARD = [list("QWERTYUIOP"), list("ASDFGHJKL"), ["ENTER"] + list("ZXCVBNM") + ["DEL"]]
+KEYBOARD = [list("QWERTYUIOP"), list("ASDFGHJKL"), ["GO"] + list("ZXCVBNM") + ["DEL"]]
 
-serve(reload_excludes=["public/app.css"])
+if __name__ == "__main__":
+    serve(reload_excludes=["./app.css"])
